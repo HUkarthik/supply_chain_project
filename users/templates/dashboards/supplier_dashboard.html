@@ -1,0 +1,960 @@
+<!DOCTYPE html>
+{% load static widget_tweaks %}
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Supplier Dashboard - Supply Chain Management</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, rgba(15, 32, 39, 0.7), rgba(32, 58, 67, 0.7)), url('{% static "images/warehouse.jpg" %}') no-repeat center center fixed;
+            background-size: cover; 
+            color: #fff;
+            min-height: 100vh;
+            display: flex;
+            overflow-x: hidden;
+        }
+
+        .sidebar {
+            width: 250px;
+            height: 100vh;
+            position: fixed;
+            background: rgba(0, 0, 0, 0);
+            backdrop-filter: blur(5px);
+            padding: 20px;
+            transition: transform 0.3s ease;
+            z-index: 10;
+        }
+
+        .sidebar h2 {
+            font-size: 22px;
+            text-align: center;
+            margin-bottom: 30px;
+            color: #00e1ff;
+        }
+
+        .sidebar a {
+            display: flex;
+            align-items: center;
+            padding: 10px 15px;
+            margin-bottom: 10px;
+            color: #eee;
+            text-decoration: none;
+            border-radius: 5px;
+            transition: all 0.3s ease;
+        }
+
+        .sidebar a i {
+            margin-right: 10px;
+        }
+
+        .sidebar a:hover, .sidebar a.active {
+            background: rgba(0, 225, 255, 0.09);
+            color: #00e1ff;
+        }
+
+        .sidebar .notification-link {
+            position: relative;
+        }
+
+        .sidebar .notification-link .badge {
+            position: absolute;
+            top: 5px;
+            right: 10px;
+            background: #ff4444;
+            color: white;
+            border-radius: 50%;
+            padding: 2px 6px;
+            font-size: 12px;
+        }
+
+        .main-content {
+            margin-left: 250px;
+            width: calc(100% - 250px);
+            padding: 40px;
+            background: rgba(170, 174, 176, 0);
+            backdrop-filter: blur(5px);
+        }
+
+        .main-content h2 {
+            font-size: 28px;
+            margin-bottom: 25px;
+            color: #00e1ff;
+        }
+
+        .content-section {
+            display: none;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            animation: fadeIn 0.5s ease;
+        }
+
+        .content-section.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            margin-bottom: 5px;
+            display: block;
+            font-size: 14px;
+        }
+
+        select, input[type="text"], input[type="hidden"], input[type="number"] {
+            width: 100%;
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff;
+            font-size: 14px;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+
+        select:focus, input[type="text"]:focus, input[type="number"]:focus {
+            box-shadow: 0 0 5px rgba(0, 225, 255, 0.5);
+        }
+
+        select option {
+            background-color: #1a2a2e;
+            color: #e0f7fa;
+        }
+
+        select option:hover {
+            background-color: #003d4d;
+            color: #fff;
+        }
+
+        button {
+            background: #00e1ff;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            color: #fff;
+            font-size: 14px;
+            cursor: pointer;
+            transition: transform 0.2s ease, background 0.3s ease;
+        }
+
+        button:hover {
+            transform: scale(1.05);
+            background: #00b6e1;
+        }
+
+        .refill-button {
+            background: #28a745;
+        }
+
+        .refill-button:hover {
+            background: #218838;
+        }
+
+        .add-product-button {
+            background: rgb(26, 26, 26);
+        }
+
+        .add-product-button:hover {
+            background: rgb(54, 54, 54);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 5px;
+            overflow: hidden;
+        }
+
+        th, td {
+            padding: 10px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            text-align: center;
+        }
+
+        th {
+            background: rgba(0, 225, 255, 0.2);
+            font-weight: 600;
+        }
+
+        td {
+            color: #e0f7fa;
+        }
+
+        .low-stock {
+            color: #ff4444;
+            font-weight: bold;
+        }
+
+        .alert {
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 15px;
+            animation: slideUp 0.5s ease forwards;
+        }
+
+        .alert.success {
+            background: #17a2b81a;
+            color: #17a2b8;
+        }
+
+        .alert.error {
+            background: #f8d7da1a;
+            color: #721c24;
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(15px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .menu-toggle {
+            display: none;
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            font-size: 20px;
+            color: #fff;
+            cursor: pointer;
+            z-index: 1000;
+        }
+
+        .rating-stars i {
+            color: #ffd700;
+            margin-right: 5px;
+        }
+
+        .rating-stars i.text-muted {
+            color: #ccc;
+        }
+
+        .btn-secondary {
+            background: rgba(0, 0, 0, 0.3);
+            border: none;
+            border-radius: 20px;
+            padding: 5px 10px;
+            font-size: 0.8rem;
+        }
+
+        .btn-secondary:hover {
+            background: #c0392b;
+            transform: scale(1.05);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            color: white;
+        }
+
+        .btn-secondary .bi {
+            font-size: 0.9rem;
+        }
+
+        .notification-item {
+            padding: 10px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .notification-item.unread {
+            background: rgba(255, 75, 75, 0.2);
+        }
+
+        .notification-item button {
+            background: #ff4444;
+            padding: 5px 10px;
+            font-size: 12px;
+        }
+
+        .notification-item button:hover {
+            background: #cc3333;
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+            }
+
+            .sidebar.active {
+                transform: translateX(0);
+            }
+
+            .main-content {
+                margin-left: 0;
+                width: 100%;
+                padding: 20px;
+            }
+
+            .menu-toggle {
+                display: block;
+            }
+        }
+
+        .route-details {
+            margin-top: 20px;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 5px;
+        }
+        
+        .route-details h4 {
+            color: #00e1ff;
+            margin-bottom: 10px;
+        }
+        
+        .route-details p {
+            margin: 5px 0;
+            color: #e0f7fa;
+        }
+        
+        .route-details .btn-primary {
+            background: #00e1ff;
+            border: none;
+        }
+        
+        .route-details .btn-primary:hover {
+            background: #00b6e1;
+        }
+
+        .dashboard-overview {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .overview-card {
+            background: rgba(255, 255, 255, 0.08);
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid rgba(0, 225, 255, 0.2);
+        }
+
+        .overview-card h4 {
+            color: #00e1ff;
+            font-size: 16px;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .overview-card p {
+            font-size: 14px;
+            color: #e0f7fa;
+            margin: 5px 0;
+        }
+
+        .sales-chart {
+            margin-top: 20px;
+            max-width: 600px;
+        }
+
+        .forecast-section {
+            margin-top: 20px;
+        }
+
+        .forecast-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 5px;
+            overflow: hidden;
+        }
+
+        .forecast-table th, .forecast-table td {
+            padding: 10px;
+            text-align: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .forecast-table th {
+            background: rgba(0, 225, 255, 0.2);
+            font-weight: 600;
+        }
+
+        .forecast-table td {
+            color: #e0f7fa;
+        }
+    </style>
+</head>
+<body>
+    <div class="menu-toggle" id="menuToggle">
+        <i class="fas fa-bars"></i>
+    </div>
+    <div class="sidebar" id="sidebar">
+        <h2>Supplier Dashboard</h2>
+        <a href="#" class="nav-link active" data-section="rating"><i class="fas fa-home"></i> HOME</a>
+        <a href="#" class="nav-link" data-section="orders"><i class="fas fa-box"></i> Manage Orders</a>
+        <a href="#" class="nav-link" data-section="route"><i class="fas fa-location-arrow"></i> Customer location</a>
+        <a href="#" class="nav-link" data-section="warehouse"><i class="fas fa-warehouse"></i> Warehouse Stock</a>
+        <a href="#" class="nav-link notification-link" data-section="notifications">
+            <i class="fas fa-bell"></i> Notifications
+            {% if notifications|length > 0 %}
+                {% with unread_count=notifications|length %}
+                    {% if unread_count > 0 %}
+                        <span class="badge" id="notification-badge">{{ unread_count }}</span>
+                    {% endif %}
+                {% endwith %}
+            {% endif %}
+        </a>
+        <a href="{% url 'users:user_logout' %}" class="btn btn-secondary mt-4"><i class="bi bi-box-arrow-right"></i> Logout</a>
+    </div>
+    <div class="main-content">
+        <h2>Welcome, {{ user.username }}</h2>
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert {% if 'error' in message.tags %}error{% else %}success{% endif %}">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+        <div id="rating" class="content-section active">
+            <h3>Dashboard Overview</h3>
+            <div class="dashboard-overview">
+                <div class="overview-card">
+                    <h4>Supplier Rating</h4>
+                    <div class="rating-stars">
+                        {% for i in "12345" %}
+                            {% if i <= avg_rating|stringformat:"d" %}
+                                <i class="fas fa-star"></i>
+                            {% elif i <= avg_rating|add:'0.5' %}
+                                <i class="fas fa-star-half-alt"></i>
+                            {% else %}
+                                <i class="fas fa-star text-muted"></i>
+                            {% endif %}
+                        {% endfor %}
+                        <span class="ms-2">({{ avg_rating|floatformat:1 }}/5)</span>
+                    </div>
+                </div>
+                <div class="overview-card">
+                    <h4>Sales Statistics</h4>
+                    <p>Total Sales (with 18% GST): ₹{{ total_sales|floatformat:2 }}</p>
+                    <p>Total Profit: ₹{{ total_profit|floatformat:2 }}</p>
+                </div>
+            </div>
+            <div class="sales-chart">
+                <canvas id="salesChart"></canvas>
+            </div>
+            <div class="forecast-section">
+                <h4>Demand Forecast (Next 30 Days)</h4>
+                {% if forecasts %}
+                    <table class="forecast-table">
+                        <tr>
+                            <th>Product</th>
+                            <th>Forecasted Quantity</th>
+                            <th>Forecast Date</th>
+                        </tr>
+                        {% for forecast in forecasts %}
+                            <tr>
+                                <td>{{ forecast.product.name }}</td>
+                                <td>{{ forecast.forecasted_quantity }}</td>
+                                <td>{{ forecast.forecast_date|date:"Y-m-d H:i" }}</td>
+                            </tr>
+                        {% endfor %}
+                    </table>
+                {% else %}
+                    <p>No demand forecasts available.</p>
+                {% endif %}
+            </div>
+        </div>
+        <div id="orders" class="content-section">
+            <h3>Manage Orders</h3>
+            {% if orders %}
+                <table>
+                    <tr>
+                        <th>ID</th>
+                        <th>Product</th>
+                        <th>Customer</th>
+                        <th>Status</th>
+                        <th>Rating</th>
+                        <th>Action</th>
+                    </tr>
+                    {% for order in orders %}
+                        <tr>
+                            <td>{{ order.id }}</td>
+                            <td>{{ order.product_name|default:"N/A" }}</td> <!-- Handle potential None case -->
+                            <td>{{ order.customer.username }}</td>
+                            <td>{{ order.status }}</td>
+                            <td>
+                                {% if order.ratings.exists %}
+                                    {% for i in "12345" %}
+                                        {% if i <= order.ratings.first.rating|stringformat:"d" %}
+                                            <i class="fas fa-star"></i>
+                                        {% else %}
+                                            <i class="fas fa-star text-muted"></i>
+                                        {% endif %}
+                                    {% endfor %}
+                                {% else %}
+                                    Not rated
+                                {% endif %}
+                            </td>
+                            <td>
+                                <form method="post" action="{% url 'users:update_order_status' order.id %}" class="update-order-form">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="order_id" value="{{ order.id }}">
+                                    <select name="status" required>
+                                        {% for choice, display in status_choices %}
+                                            <option value="{{ choice }}" {% if choice == order.status %}selected{% endif %}>{{ display }}</option>
+                                        {% endfor %}
+                                    </select>
+                                    <button type="submit">Update</button>
+                                </form>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </table>
+            {% else %}
+                <p>No orders found.</p>
+            {% endif %}
+        </div>
+        <div id="route" class="content-section">
+            <h3>Customer Location</h3>
+            <form method="post" action="{% url 'logistics:optimize_route' 0 %}" class="optimize-route-form">
+                {% csrf_token %}
+                <input type="hidden" name="optimize_route" value="true">
+                <div class="form-group">
+                    <label for="order_id">Select Order:</label>
+                    <select name="order_id" id="order_id" required>
+                        <option value="">-- Select an Order --</option>
+                        {% for order in orders %}
+                            <option value="{{ order.id }}" data-destination="{{ order.destination }}">{{ order.id }} - {{ order.product_name|default:"N/A" }} (Destination: {{ order.destination|default:"N/A" }})</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="destination">Destination:</label>
+                    <input type="text" name="destination" id="destination" readonly>
+                </div>
+                <button type="submit">Optimize</button>
+            </form>
+        </div>
+        <div id="warehouse" class="content-section">
+            <h3>Warehouse Stock Information</h3>
+            <form method="post" action="{% url 'users:manage_warehouse' %}" class="add-product-form">
+                {% csrf_token %}
+                <input type="hidden" name="form_action" value="add_product">
+                <div class="form-group">
+                    <label for="product_name">Product Name:</label>
+                    <input type="text" name="product_name" id="product_name" required>
+                </div>
+                <div class="form-group">
+                    <label for="location">Location:</label>
+                    <input type="text" name="location" id="location" required>
+                </div>
+                <div class="form-group">
+                    <label for="stock_level">Initial Stock Level:</label>
+                    <input type="number" name="stock_level" id="stock_level" required min="0">
+                </div>
+                <div class="form-group">
+                    <label for="price">Price (₹):</label>
+                    <input type="number" step="0.01" name="price" id="price" required min="0">
+                </div>
+                <button type="submit" class="add-product-button">Add Product</button>
+            </form>
+            {% if warehouses %}
+                <table id="warehouse-table">
+                    <tr>
+                        <th>Warehouse ID</th>
+                        <th>Product</th>
+                        <th>Location</th>
+                        <th>Stock Level</th>
+                        <th>Last Updated</th>
+                        <th>Action</th>
+                    </tr>
+                    {% for warehouse in warehouses %}
+                        <tr>
+                            <td>{{ warehouse.id }}</td>
+                            <td>{{ warehouse.product.name }}</td>
+                            <td>{{ warehouse.location }}</td>
+                            <td class="{% if warehouse.stock_level <= 20 %}low-stock{% endif %}">{{ warehouse.stock_level }}</td>
+                            <td>{{ warehouse.last_updated }}</td>
+                            <td>
+                                {% if warehouse.stock_level <= 20 %}
+                                    <form method="post" action="{% url 'users:manage_warehouse' %}" class="refill-stock-form">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="warehouse_id" value="{{ warehouse.id }}">
+                                        <input type="number" name="refill_amount" placeholder="Refill Amount" required min="1">
+                                        <button type="submit" class="refill-button">Refill Stock</button>
+                                    </form>
+                                {% endif %}
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </table>
+            {% else %}
+                <p>No warehouse stock records found.</p>
+            {% endif %}
+        </div>
+        <div id="notifications" class="content-section">
+            <h3>Notifications</h3>
+            {% if notifications %}
+                {% for notification in notifications %}
+                    <div class="notification-item {% if not notification.is_read %}unread{% endif %}">
+                        <span>{{ notification.message }} ({{ notification.created_at }})</span>
+                        {% if not notification.is_read %}
+                            <form method="post" action="{% url 'users:mark_notification_read' notification.id %}" class="mark-read-form">
+                                {% csrf_token %}
+                                <button type="submit">Mark as Read</button>
+                            </form>
+                        {% endif %}
+                    </div>
+                {% endfor %}
+            {% else %}
+                <p>No notifications found.</p>
+            {% endif %}
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Function to get CSRF token from the page
+        function getCsrfToken() {
+            const token = document.querySelector('[name=csrfmiddlewaretoken]');
+            return token ? token.value : '';
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const navLinks = document.querySelectorAll('.nav-link');
+            const sections = document.querySelectorAll('.content-section');
+            const menuToggle = document.getElementById('menuToggle');
+            const sidebar = document.getElementById('sidebar');
+            const orderSelect = document.getElementById('order_id');
+            const destinationInput = document.getElementById('destination');
+
+            // Initialize Chart.js for sales graph
+            const salesData = {{ sales_data|safe }};
+            const ctx = document.getElementById('salesChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: Array.from({length: 30}, (_, i) => `Day ${i+1}`),
+                    datasets: [{
+                        label: 'Daily Sales (₹)',
+                        data: salesData.map(value => value || 0), // Handle potential undefined/null values
+                        borderColor: '#00e1ff',
+                        backgroundColor: 'rgba(0, 225, 255, 0.2)',
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Sales (₹)',
+                                color: '#e0f7fa'
+                            },
+                            ticks: {
+                                color: '#e0f7fa'
+                            },
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.1)'
+                            }
+                        },
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Days',
+                                color: '#e0f7fa'
+                            },
+                            ticks: {
+                                color: '#e0f7fa'
+                            },
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.1)'
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            labels: {
+                                color: '#e0f7fa'
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Update destination input when order is selected
+            orderSelect.addEventListener('change', function() {
+                const selectedOption = this.options[this.selectedIndex];
+                const destination = selectedOption.getAttribute('data-destination');
+                destinationInput.value = destination || 'N/A';
+            });
+
+            // Navigation handling
+            navLinks.forEach(link => {
+                if (!link.href.includes('user_logout')) {
+                    link.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        if (!link.classList.contains('active')) {
+                            navLinks.forEach(l => l.classList.remove('active'));
+                            sections.forEach(s => s.classList.remove('active'));
+                            link.classList.add('active');
+                            document.getElementById(link.dataset.section).classList.add('active');
+                        }
+                        if (window.innerWidth <= 768) {
+                            sidebar.classList.remove('active');
+                        }
+                    });
+                }
+            });
+
+            menuToggle.addEventListener('click', () => {
+                sidebar.classList.toggle('active');
+            });
+
+            // AJAX for Add Product form
+            document.querySelectorAll('.add-product-form').forEach(form => {
+                form.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    const formData = new FormData(form);
+                    const alertContainer = document.querySelector('.main-content');
+                    fetch(form.getAttribute('action'), {
+                        method: 'POST',
+                        body: formData,
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest',
+                            'X-CSRFToken': getCsrfToken()
+                        }
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        const alertDiv = document.createElement('div');
+                        alertDiv.className = `alert ${data.status === 'success' ? 'success' : 'error'}`;
+                        alertDiv.textContent = data.message;
+                        alertContainer.insertBefore(alertDiv, alertContainer.firstChild);
+                        setTimeout(() => alertDiv.remove(), 3000);
+
+                        if (data.status === 'success') {
+                            fetch(window.location.href)
+                                .then(response => response.text())
+                                .then(html => {
+                                    const parser = new DOMParser();
+                                    const doc = parser.parseFromString(html, 'text/html');
+                                    const newWarehouseSection = doc.querySelector('#warehouse');
+                                    document.querySelector('#warehouse').innerHTML = newWarehouseSection.innerHTML;
+                                });
+                            form.reset();
+                        }
+                    })
+                    .catch(error => {
+                        const alertDiv = document.createElement('div');
+                        alertDiv.className = 'alert error';
+                        alertDiv.textContent = 'Error adding product: ' + error.message;
+                        alertContainer.insertBefore(alertDiv, alertContainer.firstChild);
+                        setTimeout(() => alertDiv.remove(), 3000);
+                    });
+                });
+            });
+
+            // AJAX for Refill Stock form
+            document.querySelectorAll('.refill-stock-form').forEach(form => {
+                form.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    const formData = new FormData(form);
+                    const alertContainer = document.querySelector('.main-content');
+                    fetch(form.getAttribute('action'), {
+                        method: 'POST',
+                        body: formData,
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest',
+                            'X-CSRFToken': getCsrfToken()
+                        }
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        const alertDiv = document.createElement('div');
+                        alertDiv.className = `alert ${data.status === 'success' ? 'success' : 'error'}`;
+                        alertDiv.textContent = data.message;
+                        alertContainer.insertBefore(alertDiv, alertContainer.firstChild);
+                        setTimeout(() => alertDiv.remove(), 3000);
+
+                        if (data.status === 'success') {
+                            fetch(window.location.href)
+                                .then(response => response.text())
+                                .then(html => {
+                                    const parser = new DOMParser();
+                                    const doc = parser.parseFromString(html, 'text/html');
+                                    const newWarehouseSection = doc.querySelector('#warehouse');
+                                    document.querySelector('#warehouse').innerHTML = newWarehouseSection.innerHTML;
+                                });
+                        }
+                    })
+                    .catch(error => {
+                        const alertDiv = document.createElement('div');
+                        alertDiv.className = 'alert error';
+                        alertDiv.textContent = 'Error refilling stock: ' + error.message;
+                        alertContainer.insertBefore(alertDiv, alertContainer.firstChild);
+                        setTimeout(() => alertDiv.remove(), 3000);
+                    });
+                });
+            });
+
+            // AJAX for Update Order Status form
+            document.querySelectorAll('.update-order-form').forEach(form => {
+                form.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    const formData = new FormData(form);
+                    const alertContainer = document.querySelector('.main-content');
+                    fetch(form.getAttribute('action'), {
+                        method: 'POST',
+                        body: formData,
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest',
+                            'X-CSRFToken': getCsrfToken()
+                        }
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        const alertDiv = document.createElement('div');
+                        alertDiv.className = `alert ${data.status === 'success' ? 'success' : 'error'}`;
+                        alertDiv.textContent = data.message;
+                        alertContainer.insertBefore(alertDiv, alertContainer.firstChild);
+                        setTimeout(() => alertDiv.remove(), 3000);
+
+                        if (data.status === 'success') {
+                            fetch(window.location.href)
+                                .then(response => response.text())
+                                .then(html => {
+                                    const parser = new DOMParser();
+                                    const doc = parser.parseFromString(html, 'text/html');
+                                    const newOrdersSection = doc.querySelector('#orders');
+                                    document.querySelector('#orders').innerHTML = newOrdersSection.innerHTML;
+                                });
+                        }
+                    })
+                    .catch(error => {
+                        const alertDiv = document.createElement('div');
+                        alertDiv.className = 'alert error';
+                        alertDiv.textContent = 'Error updating order status: ' + error.message;
+                        alertContainer.insertBefore(alertDiv, alertContainer.firstChild);
+                        setTimeout(() => alertDiv.remove(), 3000);
+                    });
+                });
+            });
+
+            document.querySelectorAll('.optimize-route-form').forEach(form => {
+                form.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    const formData = new FormData(form);
+                    const orderId = formData.get('order_id');
+                    const actionUrl = form.getAttribute('action').replace('0', orderId) + '?destination=' + encodeURIComponent(formData.get('destination'));
+                    const alertContainer = document.querySelector('.main-content');
+                    fetch(actionUrl, {
+                        method: 'POST',
+                        body: formData,
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest',
+                            'X-CSRFToken': getCsrfToken()
+                        }
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        const alertDiv = document.createElement('div');
+                        alertDiv.className = `alert ${data.status === 'success' ? 'success' : 'error'}`;
+                        alertDiv.textContent = data.message;
+                        alertContainer.insertBefore(alertDiv, alertContainer.firstChild);
+                        setTimeout(() => alertDiv.remove(), 3000);
+            
+                        if (data.status === 'success') {
+                            const routeSection = document.querySelector('#route');
+                            const routeDetails = document.createElement('div');
+                            routeDetails.className = 'route-details';
+                            routeDetails.innerHTML = `
+                                <h4>Route Details</h4>
+                                <p><strong>Start Location:</strong> ${data.start_location}</p>
+                                <p><strong>Destination:</strong> ${data.destination}</p>
+                                <p><strong>AI-Optimized Route:</strong> ${data.message}</p>
+                                <p><strong>Estimated Time:</strong> ${data.estimated_time}</p>
+                                <p><strong>Distance:</strong> ${data.distance}</p>
+                                <a href="/logistics/optimize_route/${orderId}/" class="btn btn-primary mt-2">View Full Route</a>
+                            `;
+                            routeSection.appendChild(routeDetails);
+                        }
+                    })
+                    .catch(error => {
+                        const alertDiv = document.createElement('div');
+                        alertDiv.className = 'alert error';
+                        alertDiv.textContent = 'Error optimizing route: ' + error.message;
+                        alertContainer.insertBefore(alertDiv, alertContainer.firstChild);
+                        setTimeout(() => alertDiv.remove(), 3000);
+                    });
+                });
+            });
+
+            // AJAX for Mark as Read form
+            document.querySelectorAll('.mark-read-form').forEach(form => {
+                form.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    const formData = new FormData(form);
+                    const alertContainer = document.querySelector('.main-content');
+                    fetch(form.getAttribute('action'), {
+                        method: 'POST',
+                        body: formData,
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest',
+                            'X-CSRFToken': getCsrfToken()
+                        }
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        const alertDiv = document.createElement('div');
+                        alertDiv.className = `alert ${data.status === 'success' ? 'success' : 'error'}`;
+                        alertDiv.textContent = data.message;
+                        alertContainer.insertBefore(alertDiv, alertContainer.firstChild);
+                        setTimeout(() => alertDiv.remove(), 3000);
+
+                        if (data.status === 'success') {
+                            fetch(window.location.href)
+                                .then(response => response.text())
+                                .then(html => {
+                                    const parser = new DOMParser();
+                                    const doc = parser.parseFromString(html, 'text/html'); // Fixed typo: 'doc' to 'const doc'
+                                    const newNotificationsSection = doc.querySelector('#notifications');
+                                    document.querySelector('#notifications').innerHTML = newNotificationsSection.innerHTML;
+                                    // Update notification badge
+                                    const badge = document.getElementById('notification-badge');
+                                    const newUnreadCount = parseInt(badge ? badge.textContent : '0') - 1;
+                                    if (newUnreadCount > 0) {
+                                        badge.textContent = newUnreadCount;
+                                    } else {
+                                        badge?.remove(); // Use optional chaining for safety
+                                    }
+                                });
+                        }
+                    })
+                    .catch(error => {
+                        const alertDiv = document.createElement('div');
+                        alertDiv.className = 'alert error';
+                        alertDiv.textContent = 'Error marking notification as read: ' + error.message;
+                        alertContainer.insertBefore(alertDiv, alertContainer.firstChild);
+                        setTimeout(() => alertDiv.remove(), 3000);
+                    });
+                });
+            });
+        });
+    </script>
+</body>
+</html>

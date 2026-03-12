@@ -1,0 +1,600 @@
+{% load widget_tweaks %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard | Management Console</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #6366f1;
+            --secondary-color: #4f46e5;
+            --dark-bg:rgba(15, 23, 42, 0.61);
+            --light-bg: #f8fafc;
+            --sidebar-bg: rgba(27, 32, 44, 0);
+        }
+
+        body {
+            background: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)), url('/static/images/admin.jpg') no-repeat center center fixed;
+            background-size: cover;
+            min-height: 100vh;
+            font-family: 'Inter', sans-serif;
+            color: #e2e8f0;
+            margin: 0;
+        }
+
+        .container-fluid {
+            padding: 0;
+        }
+
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 250px;
+            height: 100vh;
+            background: var(--sidebar-bg);
+            backdrop-filter: blur(16px);
+            border-right: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 2rem 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .sidebar-header {
+            display: flex;
+            align-items: center;
+            padding: 0 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .sidebar-header h3 {
+            color: #fff;
+            font-weight: 600;
+            margin: 0;
+            font-size: 1.5rem;
+        }
+
+        .nav-link {
+            color: #fff;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            transition: all 0.3s ease;
+        }
+
+        .nav-link:hover, .nav-link.active {
+            background: rgba(99, 102, 241, 0.2);
+            color: #fff;
+        }
+
+        .nav-link i {
+            font-size: 1.25rem;
+        }
+
+        .main-content {
+            margin-left: 250px;
+            padding: 2rem;
+        }
+
+        .glass-panel {
+            background: rgba(15, 23, 42, 0);
+            backdrop-filter: blur(16px);
+            border-radius: 24px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            padding: 2.5rem;
+            animation: fadeIn 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .dashboard-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2.5rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .dashboard-header h1 {
+            font-weight: 700;
+            color: #fff;
+            letter-spacing: -0.025em;
+            margin: 0;
+        }
+
+        .dashboard-header p {
+            color: #fff;
+            margin: 0;
+        }
+
+        .section-title {
+            font-weight: 600;
+            color: #fff;
+            margin: 2rem 0 1.5rem;
+            position: relative;
+            padding-left: 1.25rem;
+        }
+
+        .section-title::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 6px;
+            height: 24px;
+            background: var(--primary-color);
+            border-radius: 4px;
+        }
+
+        .data-table {
+            --bs-table-bg: transparent;
+            --bs-table-color: #e2e8f0;
+            --bs-table-border-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .data-table thead {
+            background: rgba(79, 70, 229, 0.15);
+            color: #818cf8;
+            font-weight: 500;
+        }
+
+        .data-table tbody tr {
+            transition: all 0.2s ease;
+        }
+
+        .data-table tbody tr:hover {
+            background: rgba(99, 102, 241, 0.05);
+            transform: translateX(8px);
+        }
+
+        .status-badge {
+            padding: 0.35rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+
+        .status-pending { background: rgba(251, 191, 36, 0.15); color: #f59e0b }
+        .status-shipped { background: rgba(16, 185, 129, 0.15); color: #10b981 }
+        .status-delivered { background: rgba(59, 130, 246, 0.15); color: #3b82f6 }
+
+        .form-control, .form-select {
+            background: rgba(15, 23, 42, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: #e2e8f0;
+            border-radius: 12px;
+            padding: 0.75rem 1.25rem;
+            transition: all 0.3s ease;
+        }
+
+        .form-control:focus, .form-select:focus {
+            background: rgba(15, 23, 42, 0.7);
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.25);
+            color: #fff;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 12px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg,rgb(31, 31, 31),rgb(87, 82, 82));
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #22c55e, #16a34a);
+        }
+
+        .action-buttons .btn {
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+        }
+
+        .card-title {
+            color: #fff;
+            font-size: 1.1rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .card-text {
+            color: #fff;
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 200px;
+            }
+            .main-content {
+                margin-left: 200px;
+            }
+            .glass-panel {
+                padding: 1.5rem;
+            }
+            .action-buttons {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <h3>Admin Panel</h3>
+            </div>
+            <nav class="nav flex-column">
+                <a class="nav-link active" href="#dashboard" data-section="dashboard">
+                    <i class="bi bi-speedometer2"></i> Dashboard
+                </a>
+                <a class="nav-link" href="#admin-requests" data-section="admin-requests">
+                    <i class="bi bi-person-check"></i> Admin Requests
+                </a>
+                <a class="nav-link" href="#customers" data-section="customers">
+                    <i class="bi bi-people"></i> Customers
+                </a>
+                <a class="nav-link" href="#suppliers" data-section="suppliers">
+                    <i class="bi bi-building"></i> Suppliers
+                </a>
+                <a class="nav-link" href="#orders" data-section="orders">
+                    <i class="bi bi-cart"></i> Orders
+                </a>
+            </nav>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <div class="glass-panel">
+                <!-- Notifications at the Top -->
+                {% if messages %}
+                <div class="toast-container position-static mb-4">
+                    {% for message in messages %}
+                    <div class="toast fade show" role="alert">
+                        <div class="toast-header bg-primary text-white">
+                            <strong class="me-auto">System Alert</strong>
+                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast"></button>
+                        </div>
+                        <div class="toast-body bg-dark">
+                            {{ message }}
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+
+                <header class="dashboard-header">
+                    <div>
+                        <h1>Admin Console</h1>
+                        <p>Welcome back, {{ request.user.username }}</p>
+                    </div>
+                    <a href="{% url 'users:user_logout' %}" class="btn btn-danger">
+                        <i class="bi bi-box-arrow-right"></i> Logout
+                    </a>
+                </header>
+
+                <!-- Dashboard Section -->
+                <section id="dashboard" class="content-section">
+                    <h3 class="section-title">DASHBOARD</h3>
+                    <div class="mb-5">
+                        <p class="text-muted">Overview of system activities.</p>
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="card">
+                                    <div class="card-body">
+                                        <h5 class="card-title">Total Customers</h5>
+                                        <p class="card-text">{{ customers.count }}</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="card">
+                                    <div class="card-body">
+                                        <h5 class="card-title">Total Suppliers</h5>
+                                        <p class="card-text">{{ suppliers.count }}</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="card">
+                                    <div class="card-body">
+                                        <h5 class="card-title">Total Orders</h5>
+                                        <p class="card-text">{{ orders.count }}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Admin Requests Section -->
+                <section id="admin-requests" class="content-section" style="display: none;">
+                    <h3 class="section-title">ADMIN REQUESTS</h3>
+                    <div class="mb-5">
+                        <div class="table-responsive">
+                            <table class="table data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Username</th>
+                                        <th>Email</th>
+                                        <th>Requested At</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for admin_request in admin_requests %}
+                                    <tr>
+                                        <td>{{ admin_request.user.username }}</td>
+                                        <td>{{ admin_request.user.email }}</td>
+                                        <td>{{ admin_request.requested_at }}</td>
+                                        <td>
+                                            <div class="action-buttons d-flex gap-2">
+                                                <form method="post" onsubmit="return confirm('Approve this admin request?');">
+                                                    {% csrf_token %}
+                                                    <input type="hidden" name="request_id" value="{{ admin_request.id }}">
+                                                    <input type="hidden" name="action" value="approve_admin">
+                                                    <button type="submit" class="btn btn-success btn-sm">
+                                                        <i class="bi bi-check-circle"></i> Approve
+                                                    </button>
+                                                </form>
+                                                <form method="post" onsubmit="return confirm('Deny this admin request? This will delete the user.');">
+                                                    {% csrf_token %}
+                                                    <input type="hidden" name="request_id" value="{{ admin_request.id }}">
+                                                    <input type="hidden" name="action" value="deny_admin">
+                                                    <button type="submit" class="btn btn-danger btn-sm">
+                                                        <i class="bi bi-x-circle"></i> Deny
+                                                    </button>
+                                                </form>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% empty %}
+                                    <tr>
+                                        <td colspan="4" class="text-center text-muted py-4">No pending admin requests</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Customers Section -->
+                <section id="customers" class="content-section" style="display: none;">
+                    <h3 class="section-title">CUSTOMERS</h3>
+                    <div class="mb-5">
+                        <div class="table-responsive">
+                            <table class="table data-table">
+                                <thead>
+                                    <tr>
+                                        <th>User</th>
+                                        <th>Contact</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for customer in customers %}
+                                    <tr>
+                                        <td>
+                                            <div class="d-flex align-items-center gap-3">
+                                                <div class="user-avatar">
+                                                    <i class="bi bi-person"></i>
+                                                </div>
+                                                <div>
+                                                    <div class="fw-500">{{ customer.username }}</div>
+                                                    <small class="text-muted">Customer</small>
+                                                </div>
+                                            </td>
+                                        </td>
+                                        <td>{{ customer.email }}</td>
+                                        <td>
+                                            <div class="action-buttons d-flex gap-2">
+                                                <a href="{% url 'users:edit_customer' user_id=customer.id %}" class="btn btn-primary btn-sm">
+                                                    <i class="bi bi-pencil-square"></i> Edit
+                                                </a>
+                                                <form method="post" onsubmit="return confirm('Confirm deletion?');">
+                                                    {% csrf_token %}
+                                                    <input type="hidden" name="user_id" value="{{ customer.id }}">
+                                                    <input type="hidden" name="action" value="delete">
+                                                    <button type="submit" class="btn btn-danger btn-sm">
+                                                        <i class="bi bi-trash3"></i> Delete
+                                                    </button>
+                                                </form>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% empty %}
+                                    <tr>
+                                        <td colspan="3" class="text-center text-muted py-4">No customers found</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Suppliers Section -->
+                <section id="suppliers" class="content-section" style="display: none;">
+                    <h3 class="section-title">SUPPLIERS</h3>
+                    <div class="mb-5">
+                        <div class="table-responsive">
+                            <table class="table data-table">
+                                <thead>
+                                    <tr>
+                                        <th>User</th>
+                                        <th>Contact</th>
+                                        <th>Average Rating</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for supplier in suppliers %}
+                                    <tr>
+                                        <td>
+                                            <div class="d-flex align-items-center gap-3">
+                                                <div class="user-avatar">
+                                                    <i class="bi bi-building"></i>
+                                                </div>
+                                                <div>
+                                                    <div class="fw-500">{{ supplier.username }}</div>
+                                                    <small class="text-muted">Supplier</small>
+                                                </div>
+                                            </td>
+                                        </td>
+                                        <td>{{ supplier.email }}</td>
+                                        <td>
+                                            {% if supplier.supplier %}
+                                                {{ supplier.supplier.average_rating|floatformat:1 }} / 5
+                                            {% else %}
+                                                N/A
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <div class="action-buttons d-flex gap-2">
+                                                <a href="{% url 'users:edit_supplier' user_id=supplier.id %}" class="btn btn-primary btn-sm">
+                                                    <i class="bi bi-pencil-square"></i> Edit
+                                                </a>
+                                                <form method="post" onsubmit="return confirm('Confirm deletion?');">
+                                                    {% csrf_token %}
+                                                    <input type="hidden" name="user_id" value="{{ supplier.id }}">
+                                                    <input type="hidden" name="action" value="delete">
+                                                    <button type="submit" class="btn btn-danger btn-sm">
+                                                        <i class="bi bi-trash3"></i> Delete
+                                                    </button>
+                                                </form>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% empty %}
+                                    <tr>
+                                        <td colspan="4" class="text-center text-muted py-4">No suppliers found</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Orders Section -->
+                <section id="orders" class="content-section" style="display: none;">
+                    <h3 class="section-title">ORDERS</h3>
+                    <div class="mb-5">
+                        <div class="table-responsive">
+                            <table class="table data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Order ID</th>
+                                        <th>Product</th>
+                                        <th>Parties</th>
+                                        <th>Status</th>
+                                        <th>Rating</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for order in orders %}
+                                    <tr>
+                                        <td>#{{ order.id }}</td>
+                                        <td>{{ order.product_name }}</td>
+                                        <td>
+                                            <div class="d-flex flex-column">
+                                                <small>Customer: {{ order.customer.username }}</small>
+                                                <small>Supplier: {{ order.supplier.username }}</small>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <span class="status-badge status-{{ order.status|lower }}">{{ order.status }}</span>
+                                        </td>
+                                        <td>
+                                            {% for rating in ratings %}
+                                                {% if rating.order.id == order.id %}
+                                                    {{ rating.rating }} / 5
+                                                {% endif %}
+                                            {% empty %}
+                                                N/A
+                                            {% endfor %}
+                                        </td>
+                                    </tr>
+                                    {% empty %}
+                                    <tr>
+                                        <td colspan="5" class="text-center text-muted py-4">No orders found</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        const toasts = document.querySelectorAll('.toast');
+        toasts.forEach(toast => new bootstrap.Toast(toast));
+
+        // Sidebar navigation logic
+        const navLinks = document.querySelectorAll('.nav-link');
+        const sections = document.querySelectorAll('.content-section');
+
+        navLinks.forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                const sectionId = link.getAttribute('data-section');
+
+                // Hide all sections
+                sections.forEach(section => {
+                    section.style.display = 'none';
+                });
+
+                // Show the selected section
+                document.getElementById(sectionId).style.display = 'block';
+
+                // Update active class
+                navLinks.forEach(l => l.classList.remove('active'));
+                link.classList.add('active');
+            });
+        });
+    </script>
+</body>
+</html>

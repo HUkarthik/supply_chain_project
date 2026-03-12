@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+{% load static %} 
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Supply Chain Management</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-image: url('{% static "images/background.jpg" %}');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+    
+        .container {
+            max-width: 400px;
+            width: 100%;
+            background: linear-gradient(135deg, rgba(255,255,255,0.1), rgba(255,255,255,0));
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-radius: 20px;
+            color: #fff;
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+            padding: 40px;
+        }
+    
+        h2 {
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 28px;
+            font-weight: 600;
+        }
+    
+        .form-group {
+            margin-bottom: 20px;
+            position: relative;
+        }
+    
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-size: 14px;
+            font-weight: 400;
+        }
+    
+        input[type="text"], input[type="password"] {
+            width: 100%;
+            padding: 10px 10px 10px 40px;
+            background-color: rgba(255,255,255,0.07);
+            border: none;
+            border-radius: 5px;
+            color: #fff;
+            font-size: 16px;
+            box-sizing: border-box;
+        }
+    
+        .form-group i {
+            position: absolute;
+            left: 12px;
+            top: 38px;
+            color: #fff;
+            font-size: 16px;
+        }
+    
+        .form-group .eye-icon {
+            left: auto;
+            right: 12px;
+            cursor: pointer;
+            top: 38px;
+        }
+    
+        button {
+            width: 100%;
+            padding: 10px;
+            background-color: #28a745;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 18px;
+        }
+    
+        button:hover {
+            background-color: #218838;
+        }
+    
+        .alert {
+            padding: 10px;
+            margin-bottom: 15px;
+            border-radius: 5px;
+        }
+    
+        .alert.success {
+            background: #d4edda;
+            color: #155724;
+        }
+    
+        .alert.error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+    
+        p {
+            text-align: center;
+            margin-top: 20px;
+            position: relative; /* Ensure positioning context for pseudo-elements */
+        }
+    
+        p::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.2); /* Light semi-transparent background */
+            z-index: -1;
+            border-radius: 5px;
+        }
+    
+        a {
+            color: #000000; /* Dark text for contrast */
+            text-decoration: none;
+            font-weight: bold; /* Make text stand out */
+            padding: 5px 10px; /* Add padding for a button-like effect */
+            background-color: rgba(255, 255, 255, 0.8); /* White background with transparency */
+            border-radius: 5px; /* Rounded corners */
+            display: inline-block; /* Ensure padding and background apply correctly */
+        }
+    
+        a:hover {
+            text-decoration: underline;
+            background-color: rgba(255, 255, 255, 1); /* Fully opaque on hover */
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Login</h2>
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert {{ message.tags }}">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+        <form method="post">
+            {% csrf_token %}
+            <div class="form-group">
+                {{ form.username.label_tag }}
+                <i class="fas fa-user"></i>
+                {{ form.username }}
+            </div>
+            <div class="form-group">
+                {{ form.password.label_tag }}
+                <i class="fas fa-lock"></i>
+                {{ form.password }}
+                <i class="fas fa-eye eye-icon" id="togglePassword"></i>
+            </div>
+            <button type="submit">Login</button>
+        </form>
+        <p>Don't have an account? <a href="{% url 'users:register' %}">Register here</a></p>
+    </div>
+    <script>
+        document.getElementById('togglePassword').addEventListener('click', function () {
+            const password = document.querySelector('#id_password');
+            const type = password.getAttribute('type') === 'password' ? 'text' : 'password';
+            password.setAttribute('type', type);
+            this.classList.toggle('fa-eye');
+            this.classList.toggle('fa-eye-slash');
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Admin Activity Dashboard</title>
+    <style>
+        body {
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #e0eafc 0%, #cfdef3 100%);
+            margin: 0;
+            padding: 0;
+            color: #2c3e50;
+            line-height: 1.6;
+            display: flex;
+            justify-content: center;
+            min-height: 100vh;
+        }
+        .container {
+            width: 90%;
+            max-width: 1200px;
+            background: #ffffff;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            padding: 30px;
+            margin: 20px;
+        }
+        h1 {
+            text-align: center;
+            color: #1a252f;
+            padding: 20px 0;
+            border-bottom: 3px solid #3498db;
+            font-size: 2.5em;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+        p {
+            text-align: center;
+            font-size: 1.3em;
+            color: #34495e;
+            margin: 15px 0;
+            font-weight: 500;
+        }
+        h2 {
+            color: #2980b9;
+            margin: 20px 0 10px 0;
+            font-size: 1.8em;
+            font-weight: 600;
+            border-bottom: 1px solid #ecf0f1;
+            padding-bottom: 5px;
+        }
+        ul {
+            list-style-type: none;
+            padding: 0;
+            margin: 0;
+        }
+        li {
+            background: #f9fbfd;
+            margin: 15px 0;
+            padding: 15px 20px;
+            border-left: 5px solid #3498db;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+            transition: all 0.3s ease;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        li:hover {
+            transform: translateX(10px);
+            background: #ecf0f1;
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+        }
+        a {
+            display: block;
+            text-align: center;
+            padding: 12px;
+            margin: 30px auto 0;
+            width: 250px;
+            background: linear-gradient(90deg, #3498db, #2980b9);
+            color: #fff;
+            text-decoration: none;
+            border-radius: 25px;
+            font-size: 1.1em;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(52, 152, 219, 0.4);
+        }
+        a:hover {
+            background: linear-gradient(90deg, #2980b9, #1e6b9e);
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(52, 152, 219, 0.6);
+        }
+        @media (max-width: 600px) {
+            h1 { font-size: 2em; }
+            .container { padding: 15px; }
+            a { width: 200px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Admin Activity Dashboard</h1>
+        <p>Welcome, {{ request.user.username }}!</p>
+        {% if customers %}
+            <h2>Customers</h2>
+            <ul>
+            {% for customer in customers %}
+                <li>{{ customer.username }}</li>
+            {% endfor %}
+            </ul>
+        {% endif %}
+        {% if suppliers %}
+            <h2>Suppliers</h2>
+            <ul>
+            {% for supplier in suppliers %}
+                <li>{{ supplier.username }}</li>
+            {% endfor %}
+            </ul>
+        {% endif %}
+        {% if orders %}
+            <h2>Orders</h2>
+            <ul>
+            {% for order in orders %}
+                <li>Order {{ order.id }} by {{ order.customer.username }}</li>
+            {% endfor %}
+            </ul>
+        {% endif %}
+        <a href="{% url 'dashboard' %}">Back to Dashboard</a>
+    </div>
+</body>
+</html>
